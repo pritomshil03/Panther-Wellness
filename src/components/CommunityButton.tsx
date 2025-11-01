@@ -9,24 +9,24 @@ export const CommunityButton = () => {
   return (
     <>
       {/* Floating Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
         <Button
           onClick={() => setIsOpen(!isOpen)}
-          className="h-16 w-16 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all hover:scale-110"
+          className="h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-lg bg-primary hover:bg-primary/90 transition-all hover:scale-110 active:scale-95"
           size="icon"
         >
           {isOpen ? (
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5 sm:h-6 sm:w-6" />
           ) : (
-            <Users className="h-6 w-6" />
+            <Users className="h-5 w-5 sm:h-6 sm:w-6" />
           )}
         </Button>
       </div>
 
       {/* Popup Menu */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 animate-in slide-in-from-bottom-2">
-          <Card className="shadow-2xl border-border/50 w-80 bg-card/95 backdrop-blur-sm">
+        <div className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-50 animate-in slide-in-from-bottom-2 max-w-[calc(100vw-2rem)] sm:max-w-none">
+          <Card className="shadow-2xl border-border/50 w-full sm:w-80 bg-card/95 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-primary flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
