@@ -6,6 +6,7 @@ import { Brain, MessageCircle, Target, Music, LogOut } from "lucide-react";
 import pantherLogo from "@/assets/panther-logo.png";
 import { useToast } from "@/hooks/use-toast";
 import { AppointmentDialog } from "@/components/AppointmentDialog";
+import { CommunityButton } from "@/components/CommunityButton";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -121,6 +122,9 @@ const Dashboard = () => {
           })}
         </div>
       </main>
+
+      {/* Community Button */}
+      <CommunityButton />
     </div>
   );
 };
