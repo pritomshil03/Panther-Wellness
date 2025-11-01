@@ -81,6 +81,14 @@ const Login = () => {
               SSO integration coming soon
             </p>
           </form>
+          
+          <div className="mt-6 text-center text-sm text-muted-foreground space-y-2">
+            <div className="flex justify-center gap-4">
+              <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>
+              <span>•</span>
+              <a href="/terms" className="text-primary hover:underline">Terms & Conditions</a>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

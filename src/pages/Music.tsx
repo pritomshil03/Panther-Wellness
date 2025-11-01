@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,21 @@ import pantherLogo from "@/assets/panther-logo.png";
 const Music = () => {
   const navigate = useNavigate();
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [playedItems, setPlayedItems] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const saved = localStorage.getItem("pantherPlayedMusic");
+    if (saved) {
+      setPlayedItems(new Set(JSON.parse(saved)));
+    }
+  }, []);
+
+  const handleListen = (title: string) => {
+    const newPlayed = new Set(playedItems);
+    newPlayed.add(title);
+    setPlayedItems(newPlayed);
+    localStorage.setItem("pantherPlayedMusic", JSON.stringify([...newPlayed]));
+  };
 
   const moodCategories = [
     {
@@ -102,7 +117,9 @@ const Music = () => {
             </h2>
             {moodCategories
               .find((cat) => cat.mood === selectedMood)
-              ?.recommendations.map((rec, index) => (
+              ?.recommendations
+              .filter((rec) => !playedItems.has(rec.title))
+              .map((rec, index) => (
                 <Card
                   key={index}
                   className={`shadow-lg border-border/50 bg-gradient-to-r ${
@@ -121,13 +138,29 @@ const Music = () => {
                         </p>
                       </div>
                     </div>
-                    <Button className="bg-primary hover:bg-primary/90">
+                    <Button 
+                      className="bg-primary hover:bg-primary/90"
+                      onClick={() => handleListen(rec.title)}
+                    >
                       <Headphones className="h-4 w-4 mr-2" />
                       Listen
                     </Button>
                   </CardContent>
                 </Card>
               ))}
+            
+            {moodCategories
+              .find((cat) => cat.mood === selectedMood)
+              ?.recommendations
+              .filter((rec) => !playedItems.has(rec.title)).length === 0 && (
+              <Card className="shadow-lg border-border/50">
+                <CardContent className="py-8 text-center">
+                  <p className="text-muted-foreground">
+                    You've explored all recommendations for this mood. Try selecting a different mood or check back later!
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             <Card className="shadow-xl border-border/50 bg-gradient-to-r from-primary/5 to-secondary/5 mt-8">
               <CardContent className="py-6">

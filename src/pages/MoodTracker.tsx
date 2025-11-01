@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,17 @@ const MoodTracker = () => {
   const [motivation, setMotivation] = useState([5]);
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState({ level: "", message: "", suggestions: [] as string[] });
+
+  // Reset form on mount (start from zero)
+  useEffect(() => {
+    setMood("");
+    setSleep([5]);
+    setEnergy([5]);
+    setStress([5]);
+    setSocial([5]);
+    setMotivation([5]);
+    setShowResults(false);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +71,17 @@ const MoodTracker = () => {
       ];
     }
     
+    const moodData = {
+      mood,
+      level,
+      message,
+      suggestions,
+      avgScore,
+      timestamp: new Date().toISOString(),
+      scores: { sleep: sleep[0], energy: energy[0], stress: stress[0], social: social[0], motivation: motivation[0] }
+    };
+    
+    localStorage.setItem("pantherMoodData", JSON.stringify(moodData));
     setResults({ level, message, suggestions });
     setShowResults(true);
     

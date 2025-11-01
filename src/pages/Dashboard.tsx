@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Brain, MessageCircle, Target, Music, LogOut } from "lucide-react";
 import pantherLogo from "@/assets/panther-logo.png";
 import { useToast } from "@/hooks/use-toast";
+import { AppointmentDialog } from "@/components/AppointmentDialog";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -66,14 +67,17 @@ const Dashboard = () => {
             <img src={pantherLogo} alt="Panther Wellness" className="h-12 w-auto" />
             <h1 className="text-2xl font-bold text-primary hidden sm:block">Panther Wellness</h1>
           </div>
-          <Button 
-            onClick={handleLogout} 
-            variant="outline" 
-            className="gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Logout</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <AppointmentDialog />
+            <Button 
+              onClick={handleLogout} 
+              variant="outline" 
+              className="gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </Button>
+          </div>
         </div>
       </header>
 

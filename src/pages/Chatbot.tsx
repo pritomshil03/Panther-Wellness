@@ -7,6 +7,29 @@ import { ArrowLeft, Send, Bot, User } from "lucide-react";
 import pantherLogo from "@/assets/panther-logo.png";
 import { useToast } from "@/hooks/use-toast";
 
+interface Goal {
+  id: string;
+  title: string;
+  progress: number;
+  target: number;
+  unit: string;
+}
+
+interface MoodData {
+  mood: string;
+  level: string;
+  message: string;
+  avgScore: number;
+  timestamp: string;
+  scores: {
+    sleep: number;
+    energy: number;
+    stress: number;
+    social: number;
+    motivation: number;
+  };
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -15,15 +38,54 @@ interface Message {
 const Chatbot = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hi there! I'm your Panther Wellness AI companion. I'm here to support you with mindfulness, stress management, and emotional well-being. How are you feeling today?"
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [contextLoaded, setContextLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!contextLoaded) {
+      const moodDataStr = localStorage.getItem("pantherMoodData");
+      const goalsStr = localStorage.getItem("pantherGoals");
+      
+      let contextMessage = "Hi! I'm your Panther Wellness AI companion. I'm here to support you with care and understanding. ";
+      
+      const moodData: MoodData | null = moodDataStr ? JSON.parse(moodDataStr) : null;
+      const goals: Goal[] = goalsStr ? JSON.parse(goalsStr) : [];
+      
+      if (moodData || goals.length > 0) {
+        contextMessage += "\n\nI've reviewed your wellness data:\n";
+        
+        if (moodData) {
+          contextMessage += `\n**Your Recent Mood Check:**\nYou're feeling ${moodData.mood} with ${moodData.level}. Your sleep quality is ${moodData.scores.sleep}/10, energy at ${moodData.scores.energy}/10, and academic stress at ${moodData.scores.stress}/10. `;
+        }
+        
+        if (goals.length > 0) {
+          const activeGoals = goals.filter(g => g.progress < g.target);
+          const completedGoals = goals.filter(g => g.progress >= g.target);
+          
+          if (activeGoals.length > 0) {
+            contextMessage += `\n\n**Your Active Wellness Goals:**\n`;
+            activeGoals.forEach(g => {
+              contextMessage += `- ${g.title}: ${g.progress}/${g.target} ${g.unit}\n`;
+            });
+          }
+          
+          if (completedGoals.length > 0) {
+            contextMessage += `\n**Completed Goals:** You've achieved ${completedGoals.length} goal(s)! `;
+          }
+        }
+        
+        contextMessage += "\n\nHow can I support you today?";
+      } else {
+        contextMessage += "How are you feeling today? I'm here to listen and help.";
+      }
+      
+      setMessages([{ role: "assistant", content: contextMessage }]);
+      setContextLoaded(true);
+    }
+  }, [contextLoaded]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -42,6 +104,26 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
+      const moodDataStr = localStorage.getItem("pantherMoodData");
+      const goalsStr = localStorage.getItem("pantherGoals");
+      const moodData: MoodData | null = moodDataStr ? JSON.parse(moodDataStr) : null;
+      const goals: Goal[] = goalsStr ? JSON.parse(goalsStr) : [];
+      
+      let systemPrompt = "You are a gentle, caring AI wellness companion for BMCC college students. Speak with warmth and empathy, like a supportive friend. Use natural, conversational language. Be encouraging and understanding. Keep responses concise (2-3 sentences). Support multilingual conversations. Avoid repeating information already mentioned. Focus on listening and providing thoughtful, personalized support.";
+      
+      if (moodData || goals.length > 0) {
+        systemPrompt += "\n\nStudent context (use naturally, don't repeat verbatim): ";
+        if (moodData) {
+          systemPrompt += `Mood: ${moodData.mood}, Stress: ${moodData.level}, Sleep: ${moodData.scores.sleep}/10, Energy: ${moodData.scores.energy}/10. `;
+        }
+        if (goals.length > 0) {
+          const active = goals.filter(g => g.progress < g.target);
+          if (active.length > 0) {
+            systemPrompt += `Active goals: ${active.map(g => g.title).join(", ")}. `;
+          }
+        }
+      }
+
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -51,15 +133,12 @@ const Chatbot = () => {
         body: JSON.stringify({
           model: "llama-3.1-8b-instant",
           messages: [
-            {
-              role: "system",
-              content: "You are a compassionate, empathetic AI wellness companion for BMCC college students. Provide supportive, motivational responses focused on mental health, stress management, and emotional well-being. Be warm, understanding, and offer practical wellness advice. Keep responses concise but meaningful. Support multilingual conversations."
-            },
-            ...messages.map(m => ({ role: m.role, content: m.content })),
+            { role: "system", content: systemPrompt },
+            ...messages.slice(-6).map(m => ({ role: m.role, content: m.content })),
             { role: "user", content: input }
           ],
           temperature: 0.7,
-          max_tokens: 300
+          max_tokens: 200
         })
       });
 
@@ -68,9 +147,11 @@ const Chatbot = () => {
       }
 
       const data = await response.json();
+      const assistantContent = data.choices[0]?.message?.content || "I'm here for you. Tell me more?";
+      
       const assistantMessage: Message = {
         role: "assistant",
-        content: data.choices[0]?.message?.content || "I'm here to support you. Could you tell me more?"
+        content: assistantContent
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -84,7 +165,7 @@ const Chatbot = () => {
       
       const fallbackMessage: Message = {
         role: "assistant",
-        content: "I'm having trouble connecting right now, but I'm here for you. Remember: taking care of your mental health is a sign of strength. Consider reaching out to BMCC counseling services if you need immediate support."
+        content: "I'm having trouble connecting, but I'm here for you. Taking care of your mental health is important. Consider reaching out to BMCC counseling if you need support."
       };
       setMessages((prev) => [...prev, fallbackMessage]);
     } finally {

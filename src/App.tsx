@@ -10,6 +10,8 @@ import MoodTracker from "./pages/MoodTracker";
 import Chatbot from "./pages/Chatbot";
 import Goals from "./pages/Goals";
 import Music from "./pages/Music";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,8 @@ const App = () => (
           <Route path="/chatbot" element={<Chatbot />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/music" element={<Music />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsAndConditions />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

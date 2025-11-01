@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Plus, Minus, Trash2, CheckCircle2 } from "lucide-react";
 import pantherLogo from "@/assets/panther-logo.png";
 import { useToast } from "@/hooks/use-toast";
 
@@ -78,6 +78,16 @@ const Goals = () => {
         }
         
         return { ...goal, progress: newProgress };
+      }
+      return goal;
+    });
+    saveGoals(updatedGoals);
+  };
+
+  const decrementProgress = (goalId: string) => {
+    const updatedGoals = goals.map((goal) => {
+      if (goal.id === goalId && goal.progress > 0) {
+        return { ...goal, progress: goal.progress - 1 };
       }
       return goal;
     });
@@ -195,12 +205,24 @@ const Goals = () => {
                       <Progress value={progressPercent} className="h-3" />
                       
                       {!isCompleted && (
-                        <Button
-                          onClick={() => incrementProgress(goal.id)}
-                          className="w-full bg-primary hover:bg-primary/90"
-                        >
-                          Mark Progress (+1)
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => decrementProgress(goal.id)}
+                            variant="outline"
+                            className="flex-1"
+                            disabled={goal.progress === 0}
+                          >
+                            <Minus className="h-4 w-4 mr-1" />
+                            -1
+                          </Button>
+                          <Button
+                            onClick={() => incrementProgress(goal.id)}
+                            className="flex-1 bg-primary hover:bg-primary/90"
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            +1
+                          </Button>
+                        </div>
                       )}
                       
                       {isCompleted && (
